@@ -57,8 +57,8 @@ func (c *Client) UploadAsset(assetPath string, version string) error {
 		return fmt.Errorf(stderr.CouldNotRequest, url, err2.Error())
 	}
 
-	if res.StatusCode != 200 {
-
+	if res.StatusCode != 201 {
+		return fmt.Errorf(stderr.ReturnStatusCode, res.StatusCode)
 	}
 
 	return nil

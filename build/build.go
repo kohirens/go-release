@@ -1,11 +1,17 @@
 package build
 
 import (
+	"flag"
 	"fmt"
+	"github.com/kohirens/go-release/pkg/github"
+	"github.com/kohirens/go-release/pkg/tar"
+	"github.com/kohirens/go-release/pkg/zip"
 	"github.com/kohirens/stdlib"
 	"github.com/kohirens/stdlib/cli"
 	"github.com/kohirens/stdlib/log"
+	"net/http"
 	"os"
+	"time"
 )
 
 const (
@@ -52,7 +58,7 @@ func Artifacts(srcDir, execName string, platforms []*Platform) ([]string, error)
 
 		// Archiving for Windows
 		if goOs == "windows" {
-			archivePath, err2 := zipArchive(prefix, execName+executable.Ext, executable)
+			archivePath, err2 := zip.ArchiveFile(executable.Dir, prefix, execName+executable.Ext)
 			if err2 != nil {
 				return nil, err2
 			}
@@ -62,7 +68,7 @@ func Artifacts(srcDir, execName string, platforms []*Platform) ([]string, error)
 		}
 
 		// Archiving for all other OSes
-		archivePath, err3 := tarArchive(prefix, executable)
+		archivePath, err3 := tar.ArchiveFile(executable.Dir, prefix, executable.Name)
 		if err3 != nil {
 			return nil, err3
 		}
@@ -76,6 +82,39 @@ func Artifacts(srcDir, execName string, platforms []*Platform) ([]string, error)
 	}
 
 	return artifacts, nil
+}
+
+func Init(flagSet *flag.FlagSet) {
+	// Implement flags for the subcommand when needed here
+}
+
+func Run(ca []string) error {
+	srcDir := ca[0]
+	execName := ca[1]
+	version := ca[2]
+	org := ca[3]
+	repo := ca[4]
+
+	artifacts, err1 := Artifacts(srcDir, execName, Platforms)
+	if err1 != nil {
+		return err1
+	}
+
+	gh := github.NewClient(&http.Client{Timeout: time.Second * 5}, org, repo)
+
+	var err2 error
+	for _, artifact := range artifacts {
+		if e := gh.UploadAsset(artifact, version); e != nil {
+			err2 = e
+			break
+		}
+	}
+
+	if err2 != nil {
+		return err2
+	}
+
+	return nil
 }
 
 // buildExecutable produces an executable in the source directory with an
@@ -125,44 +164,4 @@ func buildExecutable(srcDir string, execName string, prefix string, pf *Platform
 	log.Logf(stdout.Built, executable.Path)
 
 	return executable, nil
-}
-
-func zipArchive(prefix, executable string, artifact *Executable) (string, error) {
-	archive := prefix + ".zip"
-	so, se, _, _ := cli.RunCommand(
-		artifact.Dir,
-		"zip",
-		[]string{archive, executable},
-	)
-	if se != nil {
-		return "", fmt.Errorf("%s: %s\n", so, se.Error())
-	}
-
-	archivePath := artifact.Dir + ps + archive
-	if !stdlib.PathExist(archivePath) {
-		return "", fmt.Errorf(stderr.CouldNotMakeArchive, archivePath)
-	}
-
-	return archivePath, nil
-}
-
-func tarArchive(prefix string, executable *Executable) (string, error) {
-	filename := prefix + ".tar.gz"
-
-	so, se, _, _ := cli.RunCommand(
-		executable.Dir,
-		"tar",
-		[]string{"-zcvf", filename, executable.Name},
-	)
-
-	if se != nil {
-		return "", fmt.Errorf("%s: %s\n", so, se.Error())
-	}
-
-	archivePath := executable.Dir + ps + filename
-	if !stdlib.PathExist(archivePath) {
-		return "", fmt.Errorf(stderr.CouldNotMakeArchive, archivePath)
-	}
-
-	return archivePath, nil
 }

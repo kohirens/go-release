@@ -61,8 +61,8 @@ func TestBuild_buildExecutable(t *testing.T) {
 		{"build_linux",
 			"repo-02",
 			"ggl",
-			"ggl-darwin-amd64",
-			&Platform{"darwin", "amd64"},
+			"ggl-linux-amd64",
+			&Platform{"linux", "amd64"},
 			false,
 			&Executable{
 				Ext:  "",

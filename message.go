@@ -1,17 +1,15 @@
 package main
 
 var stdout = struct {
-	Artifacts string
-	Cs        string
-	Built     string
+	Version string
 }{
-	Artifacts: "artifacts:",
-	Cs:        "cs: %s",
-	Built:     "built %s",
+	Version: "%s, %s",
 }
 
 var stderr = struct {
 	MissingArgs string
+	NoArgs      string
 }{
-	MissingArgs: "4 arguments are required, see -help and please try gain\n",
+	MissingArgs: "4 arguments are required, see -help and please try gain",
+	NoArgs:      "there is nothing to do because no arguments were given",
 }
