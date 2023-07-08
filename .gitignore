@@ -1,0 +1,9 @@
+# Directories
+# -----------
+/.idea/
+repo-*/
+
+# Files
+# -----
+/go-release
+/go-release.exe

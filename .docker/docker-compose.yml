@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+    node:
+        build:
+            args:
+                USER_NAME: '${USER_NAME}'
+                REPO: '${REPO}'
+            dockerfile: '.docker/go-release/Dockerfile'
+            context: '..'
+            target: 'build'
+        image: 'kohirens/go-release:build'
+        networks:
+            default:
+        volumes:
+            - '../:/home/${USER_NAME}/src/${REPO}'
+            - '~/.ssh/known_hosts:/home/${USER_NAME}/.ssh/known_hosts'

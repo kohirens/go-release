@@ -1,0 +1,75 @@
+ARG USER_NAME='app'
+ARG USER_UID='1000'
+ARG USER_GID='1000'
+ARG USER_GROUP='app_users'
+ARG REPO='github.com/kohirens/go-release'
+
+FROM golang:1.20-alpine3.18 AS build
+
+ARG USER_NAME
+ARG USER_UID
+ARG USER_GID
+ARG USER_GROUP
+ARG REPO
+
+ENV GOPATH /home/${USER_NAME}
+ENV CGO_ENABLED=0
+ENV WORK_DIR=/home/${USER_NAME}/src/${REPO}
+ENV SHELL=/bin/sh
+
+# Update OS and other software
+RUN apk --no-progress --purge --no-cache upgrade \
+ && apk --no-progress --purge --no-cache add --upgrade \
+    git \
+    zip \
+ && rm -vrf /var/cache/apk/* \
+ && rm -rf /tmp/*
+
+# Add a non-root group and user.
+RUN addgroup --system --gid ${USER_GID} ${USER_GROUP} \
+ && adduser --system \
+    --disabled-password \
+    --ingroup ${USER_GROUP} \
+    --uid ${USER_UID} \
+    ${USER_NAME}
+
+USER ${USER_NAME}
+
+# Make directories with current user permissions
+RUN mkdir -p ~/bin ~/src
+
+ENV PATH="${PATH}:/home/${USER_NAME}/bin"
+
+WORKDIR "/home/${USER_NAME}/src/${REPO}"
+
+# Add source files
+COPY --chown=${USER_NAME}:${USER_GROUP} ./ ./
+
+# Build
+RUN git config --global --add safe.directory "/home/${USER_NAME}/src/${REPO}" \
+ && go mod tidy \
+ && go generate \
+ && go build \
+ && go install
+
+COPY .docker/go-release/start.sh /usr/local/bin/start.sh
+
+ENTRYPOINT [ "start.sh" ]
+
+HEALTHCHECK --interval=5s --timeout=3s --start-period=3s --retries=4 \
+    CMD go-get-latest -help || exit 1
+
+CMD [ ]
+
+FROM kohirens/git-tool-belt:2.1.2 AS release
+
+ARG USER_NAME
+ARG USER_GROUP
+ARG REPO
+
+# Add build artifacts
+COPY --from=build --chown=${USER_NAME}:${USER_GROUP} "/home/${USER_NAME}/bin/go-get-latest" /bin/vro
+
+ENV PATH="${PATH}:/home/${USER_NAME}/bin"
+
+ENTRYPOINT [ "vro" ]
