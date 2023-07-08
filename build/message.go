@@ -14,10 +14,12 @@ var stderr = struct {
 	CouldNotBuild       string
 	CouldNotMakeArchive string
 	ExecNameArgEmpty    string
+	InvalidSrcDir       string
 	MissingArgs         string
 }{
-	CouldNotBuild:       "could not build %s %s\n",
-	CouldNotMakeArchive: "could not make archive %s\n",
-	ExecNameArgEmpty:    "executable name argument cannot be empty\n",
-	MissingArgs:         "4 arguments are required, see -help and please try gain\n",
+	CouldNotBuild:       "could not build %s %s",
+	CouldNotMakeArchive: "could not make archive %s",
+	ExecNameArgEmpty:    "executable name argument cannot be empty",
+	InvalidSrcDir:       "invalid source directory %s",
+	MissingArgs:         "4 arguments are required, see -help and please try gain",
 }

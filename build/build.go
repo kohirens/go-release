@@ -11,6 +11,7 @@ import (
 	"github.com/kohirens/stdlib/log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -41,6 +42,11 @@ var Platforms = []*Platform{
 }
 
 func Artifacts(srcDir, execName string, platforms []*Platform) ([]string, error) {
+	wd, errWd := filepath.Abs(srcDir)
+	if errWd != nil {
+		return nil, fmt.Errorf(stderr.InvalidSrcDir, srcDir)
+	}
+
 	if execName == "" {
 		return nil, fmt.Errorf(stderr.ExecNameArgEmpty)
 	}
@@ -51,7 +57,7 @@ func Artifacts(srcDir, execName string, platforms []*Platform) ([]string, error)
 		goOs := pf.Os
 		goArch := pf.Arch
 		prefix := fmt.Sprintf("%s-%s-%s", execName, goOs, goArch)
-		executable, err1 := buildExecutable(srcDir, execName, prefix, pf)
+		executable, err1 := buildExecutable(wd, execName, prefix, pf)
 		if err1 != nil {
 			return nil, err1
 		}

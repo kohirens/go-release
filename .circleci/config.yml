@@ -47,6 +47,18 @@ parameters:
         type: string
 
 jobs:
+    co:
+        docker:
+            - image: cimg/base
+        steps:
+            - add_ssh_keys:
+                fingerprints:
+                    - << pipeline.parameters.ssh_finger >>
+            - checkout
+            - persist_to_workspace:
+                root: .
+                paths: [ . ]
+
     run-test:
         docker:
             - image: cimg/go:1.20
@@ -85,7 +97,7 @@ jobs:
                   username: ${DH_USER}
                   password: ${DH_PASS}
         steps:
-            - checkout
+            - attach_workspace: { at: "." }
             - run:
                 name: Build go-release
                 command: |
@@ -128,7 +140,7 @@ jobs:
                     echo ""
                     echo "Building ${DH_IMAGE} Version \"${BUILD_VER}\""
                     docker build --rm \
-                        -f "<< parameters.docker_file >> \
+                        -f "<< parameters.docker_file >>" \
                         -t "${DH_IMAGE}:${BUILD_VER}" \
                         --progress plain \
                         --target "release" .
@@ -182,16 +194,17 @@ workflows:
 
     on-tag-release:
         jobs:
-            - publish-execs:
-                context: << pipeline.parameters.ctx_auto_release >>
+            - co:
                 filters:
                     <<: *filter-semantic-tag
+            - publish-execs:
+                context: << pipeline.parameters.ctx_auto_release >>
                 app_name: << pipeline.parameters.app_name >>
+                requires: [ co ]
             - publish-image:
                 name: publish-release-image
                 context: << pipeline.parameters.ctx_docker >>
-                filters:
-                    <<: *filter-semantic-tag
-                ver_tag: <<pipeline.parameters.app_name>>
+                requires: [ co ]
+                ver_tag: << pipeline.git.tag >>
                 docker_file: ".docker/go-release/Dockerfile"
                 image_repo: << pipeline.parameters.image_repo >>
