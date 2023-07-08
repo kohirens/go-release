@@ -3,6 +3,7 @@ ARG USER_UID='1000'
 ARG USER_GID='1000'
 ARG USER_GROUP='app_users'
 ARG REPO='github.com/kohirens/go-release'
+ARG APP_NAME='go-release'
 
 FROM golang:1.20-alpine3.18 AS build
 
@@ -44,7 +45,7 @@ WORKDIR "/home/${USER_NAME}/src/${REPO}"
 
 # Add source files
 COPY --chown=${USER_NAME}:${USER_GROUP} ./ ./
-
+COPY --from=kohirens/git-tool-belt:2.1.2 /usr/local/bin/git-tool-belt /usr/local/bin/
 # Build
 RUN git config --global --add safe.directory "/home/${USER_NAME}/src/${REPO}" \
  && go mod tidy \
@@ -66,10 +67,11 @@ FROM kohirens/git-tool-belt:2.1.2 AS release
 ARG USER_NAME
 ARG USER_GROUP
 ARG REPO
+ARG APP_NAME
 
 # Add build artifacts
-COPY --from=build --chown=${USER_NAME}:${USER_GROUP} "/home/${USER_NAME}/bin/go-get-latest" /bin/vro
+COPY --from=build --chown=${USER_NAME}:${USER_GROUP} "/home/${USER_NAME}/bin/${APP_NAME}" /bin/vro
 
 ENV PATH="${PATH}:/home/${USER_NAME}/bin"
 
-ENTRYPOINT [ "vro" ]
+ENTRYPOINT [ "go-release" ]
