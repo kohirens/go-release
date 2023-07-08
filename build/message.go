@@ -5,7 +5,7 @@ var stdout = struct {
 	Cs        string
 	Built     string
 }{
-	Artifacts: "artifacts:",
+	Artifacts: "artifacts to upload:",
 	Cs:        "cs: %s",
 	Built:     "built %s",
 }

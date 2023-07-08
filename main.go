@@ -76,7 +76,7 @@ func main() {
 
 	switch ca[0] {
 	case scBuild:
-		if len(ca) < 5 {
+		if len(ca) < 6 {
 			mainErr = fmt.Errorf(stderr.MissingArgs)
 		}
 		mainErr = build.Run(ca)
