@@ -30,11 +30,12 @@ var (
 )
 
 // NewClient Return a GitHub API client.
-func NewClient(h HttpClient, org, repository string) *Client {
+func NewClient(h HttpClient, org, repository, token string) *Client {
 	return &Client{
 		Http:       h,
 		Org:        org,
 		Repository: repository,
+		Token:      token,
 	}
 }
 

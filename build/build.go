@@ -100,13 +100,14 @@ func Run(ca []string) error {
 	version := ca[2]
 	org := ca[3]
 	repo := ca[4]
+	token := ca[6]
 
 	artifacts, err1 := Artifacts(srcDir, execName, Platforms)
 	if err1 != nil {
 		return err1
 	}
 
-	gh := github.NewClient(&http.Client{Timeout: time.Second * 5}, org, repo)
+	gh := github.NewClient(&http.Client{Timeout: time.Second * 5}, org, repo, token)
 
 	var err2 error
 	for _, artifact := range artifacts {
