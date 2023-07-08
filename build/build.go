@@ -95,6 +95,10 @@ func Init(flagSet *flag.FlagSet) {
 }
 
 func Run(ca []string) error {
+	if len(ca) < 6 {
+		return fmt.Errorf(stderr.MissingArgs)
+	}
+
 	srcDir := ca[0]
 	execName := ca[1]
 	version := ca[2]
