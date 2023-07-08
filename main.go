@@ -34,7 +34,7 @@ var (
 	bi = &buildInfo{}
 	um = map[string]string{
 		"help":    "display program help information",
-		scBuild:   "build executable for multiple operating systems",
+		scBuild:   "A command to build executables for multiple operating systems.\n\nexample: build <app_name> <build_tag> <directory> <github_org> <repo> <github-token>\n",
 		"version": "display program version information",
 	}
 )
@@ -72,14 +72,15 @@ func main() {
 	ca := os.Args[1:]
 	if len(ca) == 0 {
 		mainErr = fmt.Errorf(stderr.NoArgs)
+		return
 	}
 
 	switch ca[0] {
 	case scBuild:
-		if len(ca) < 6 {
-			mainErr = fmt.Errorf(stderr.MissingArgs)
+		if e := af.subcommand[scBuild].Parse(ca[1:]); e != nil {
+			mainErr = fmt.Errorf(stderr.ParseSubcommandArgs, scBuild, e.Error())
 		}
-		mainErr = build.Run(ca)
+		mainErr = build.Run(af.subcommand[scBuild].Args())
 		return
 	}
 

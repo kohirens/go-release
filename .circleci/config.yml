@@ -108,7 +108,7 @@ jobs:
                     echo "Publishing GitHub release '<< parameters.build_tag >>' assets"
                     directory="./"
                     go generate "${directory}"
-                    ./go-release build "<< parameters.app_name >>" "<< parameters.build_tag >>" "${directory}" "kohirens" "go-release"
+                    ./go-release build "<< parameters.app_name >>" "<< parameters.build_tag >>" "${directory}" "kohirens" "go-release" "${GH_TOKEN}"
 
     publish-image:
         parameters:

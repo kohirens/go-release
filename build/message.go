@@ -21,5 +21,5 @@ var stderr = struct {
 	CouldNotMakeArchive: "could not make archive %s",
 	ExecNameArgEmpty:    "executable name argument cannot be empty",
 	InvalidSrcDir:       "invalid source directory %s",
-	MissingArgs:         "4 arguments are required, see -help and please try gain",
+	MissingArgs:         "6 arguments are required, see -help and please try gain",
 }
