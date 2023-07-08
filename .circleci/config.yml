@@ -12,7 +12,7 @@ filter-semantic-tag: &filter-semantic-tag
 executors:
     image-builder:
         docker: # see https://circleci.com/docs/building-docker-images/#docker-version
-            - image: docker:20.10.18-git
+            - image: cimg/base:current
               auth:
                   username: ${DH_USER}
                   password: ${DH_PASS}
@@ -48,8 +48,7 @@ parameters:
 
 jobs:
     co:
-        docker:
-            - image: cimg/base
+        executor: image-builder
         steps:
             - add_ssh_keys:
                 fingerprints:
@@ -195,15 +194,20 @@ workflows:
     on-tag-release:
         jobs:
             - co:
+                context: << pipeline.parameters.ctx_docker >>
                 filters:
                     <<: *filter-semantic-tag
             - publish-execs:
                 context: << pipeline.parameters.ctx_auto_release >>
+                filters:
+                    <<: *filter-semantic-tag
                 app_name: << pipeline.parameters.app_name >>
                 requires: [ co ]
             - publish-image:
                 name: publish-release-image
                 context: << pipeline.parameters.ctx_docker >>
+                filters:
+                    <<: *filter-semantic-tag
                 requires: [ co ]
                 ver_tag: << pipeline.git.tag >>
                 docker_file: ".docker/go-release/Dockerfile"
