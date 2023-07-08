@@ -79,7 +79,10 @@ func main() {
 		if len(ca) < 5 {
 			mainErr = fmt.Errorf(stderr.MissingArgs)
 		}
+		fmt.Print("here")
 		mainErr = build.Run(ca)
 		return
 	}
+
+	mainErr = fmt.Errorf(stderr.InvalidCommand, ca[0], appName)
 }

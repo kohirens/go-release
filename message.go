@@ -7,9 +7,11 @@ var stdout = struct {
 }
 
 var stderr = struct {
-	MissingArgs string
-	NoArgs      string
+	InvalidCommand string
+	MissingArgs    string
+	NoArgs         string
 }{
-	MissingArgs: "4 arguments are required, see -help and please try gain",
-	NoArgs:      "there is nothing to do because no arguments were given",
+	InvalidCommand: "nothing to do for %s, please run: %s -help",
+	MissingArgs:    "4 arguments are required, see -help and please try gain",
+	NoArgs:         "there is nothing to do because no arguments were given",
 }

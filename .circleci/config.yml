@@ -97,7 +97,7 @@ jobs:
                     echo "Publishing GitHub release '<< parameters.build_tag >>' assets"
                     directory="./"
                     go generate "${directory}"
-                    ./go-release "<< parameters.app_name >>" "<< parameters.build_tag >>" "${directory}" "kohirens" "go-release"
+                    ./go-release build "<< parameters.app_name >>" "<< parameters.build_tag >>" "${directory}" "kohirens" "go-release"
 
     publish-image:
         parameters:
@@ -116,7 +116,7 @@ jobs:
             - setup_remote_docker:
                   docker_layer_caching: true
             - run:
-                name: Build and push Docker image
+                name: Build and push image
                 command: |
                     export BUILD_VER="<<parameters.ver_tag>>"
                     if [ -z "${BUILD_VER}" ]; then
@@ -188,7 +188,8 @@ workflows:
                     <<: *filter-semantic-tag
                 app_name: << pipeline.parameters.app_name >>
             - publish-image:
-                context: << pipeline.parameters.ctx_auto_release >>
+                name: publish-release-image
+                context: << pipeline.parameters.ctx_docker >>
                 filters:
                     <<: *filter-semantic-tag
                 ver_tag: <<pipeline.parameters.app_name>>
