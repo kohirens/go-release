@@ -106,9 +106,15 @@ jobs:
                 name: Build and publish executables
                 command: |
                     echo "Publishing GitHub release '<< parameters.build_tag >>' assets"
-                    directory="./"
-                    go generate "${directory}"
-                    ./go-release build "<< parameters.app_name >>" "<< parameters.build_tag >>" "${directory}" "kohirens" "go-release" "${GH_TOKEN}"
+                    src_dir=./
+                    go generate "${src_dir}"
+                    ./go-release build \
+                        "${src_dir}" \
+                        "<< parameters.app_name >>" \
+                        "<< parameters.build_tag >>" \
+                        "kohirens" \
+                        "go-release" \
+                        "${GH_TOKEN}"
 
     publish-image:
         parameters:
