@@ -32,14 +32,17 @@ type Platform struct {
 	Arch string
 }
 
-var Platforms = []*Platform{
-	{"darwin", "amd64"},
-	{"darwin", "arm64"},
-	{"linux", "386"},
-	{"linux", "amd64"},
-	{"windows", "386"},
-	{"windows", "amd64"},
-}
+var (
+	Platforms = []*Platform{
+		{"darwin", "amd64"},
+		{"darwin", "arm64"},
+		{"linux", "386"},
+		{"linux", "amd64"},
+		{"windows", "386"},
+		{"windows", "amd64"},
+	}
+	token string
+)
 
 func Artifacts(wd, execName string, platforms []*Platform) ([]string, error) {
 	artifacts := []string{}
@@ -83,10 +86,11 @@ func Artifacts(wd, execName string, platforms []*Platform) ([]string, error) {
 
 func Init(flagSet *flag.FlagSet) {
 	// Implement flags for the subcommand when needed here
+	flagSet.StringVar(&token, "token", "", "GitHub API token")
 }
 
 func Run(ca []string) error {
-	if len(ca) < 6 {
+	if len(ca) < 5 {
 		return fmt.Errorf(stderr.MissingArgs)
 	}
 
@@ -95,17 +99,27 @@ func Run(ca []string) error {
 	version := ca[2]
 	org := ca[3]
 	repo := ca[4]
-	token := ca[5]
 
 	if !stdlib.PathExist(srcDir) {
 		return fmt.Errorf(stderr.PathNotExist, srcDir)
 	}
 
-	log.Logf(stdout.Wd, srcDir)
-
 	if strings.Trim(execName, " \t") == "" {
 		return fmt.Errorf(stderr.ExecNameArgEmpty)
 	}
+
+	if token == "" {
+		token = os.Getenv("GH_TOKEN")
+		if token == "" {
+			token = os.Getenv("GITHUB_TOKEN")
+		}
+		if token == "" {
+			return fmt.Errorf(stderr.NoToken)
+		}
+	}
+
+	log.Logf(stdout.Wd, srcDir)
+	log.Logf(stdout.Wd, execName)
 
 	artifacts, err1 := Artifacts(srcDir, execName, Platforms)
 	if err1 != nil {

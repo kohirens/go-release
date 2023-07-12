@@ -12,6 +12,8 @@ var stdout = struct {
 
 var stderr = struct {
 	CouldNotMakeArchive string
+	Generic             string
 }{
 	CouldNotMakeArchive: "could not make archive %s\n",
+	Generic:             "problem %s",
 }
