@@ -1,7 +1,10 @@
 package github
 
 var stdout = struct {
-}{}
+	UrlRequest string
+}{
+	UrlRequest: "%s'ing to %s",
+}
 
 var stderr = struct {
 	CouldNotBuildRequest string
