@@ -3,14 +3,17 @@ package github
 import (
 	"bytes"
 	"fmt"
+	"github.com/kohirens/stdlib/log"
 	"io"
 	"net/http"
 	"os"
 )
 
 const (
-	BaseUri        = "https://api.github.com/repos/%s/%s"
-	epReleaseAsset = BaseUri + "/releases/%s/assets"
+	BaseUri           = "https://api.github.com/repos/%s/%s"
+	epReleaseAsset    = BaseUri + "/releases/%s/assets"
+	HeaderApiAccept   = "application/vnd.github+json"
+	HeaderApiPostType = "application/octet-stream"
 )
 
 type HttpClient interface {
@@ -26,7 +29,7 @@ type Client struct {
 }
 
 var (
-	ApiVersion = "2022-11-28"
+	HeaderApiVersion = "2022-11-28"
 )
 
 // NewClient Return a GitHub API client.
@@ -81,8 +84,13 @@ func (c *Client) send(method, url string, body io.Reader) (*http.Response, error
 	}
 
 	req.Header.Set("Authorization", "Bearer "+c.Token)
-	req.Header.Set("Accept", "application/vnd.github+json")
-	req.Header.Set("X-GitHub-Api-Version", ApiVersion)
+	req.Header.Set("Accept", HeaderApiAccept)
+	req.Header.Set("X-GitHub-Api-Version", HeaderApiVersion)
+	if method == "POST" {
+		req.Header.Set("Content-Type", HeaderApiPostType)
+	}
+
+	log.Infof(stdout.UrlRequest, method, url)
 
 	res, err2 := c.Http.Do(req)
 	if err2 != nil {
