@@ -2,6 +2,20 @@
 ## [Unreleased]
 
 
+<a name="0.1.6"></a>
+## [0.1.6] - 2023-07-12
+### Changed
+- How GitHub API Token Is Input
+- Upload Asset
+
+### Fixed
+- Build Executables
+
+### BREAKING CHANGE
+
+Swapped input argments.
+
+
 <a name="0.1.5"></a>
 ## [0.1.5] - 2023-07-08
 ### Fixed
@@ -42,7 +56,8 @@
 - To Make Build a Subcommand
 
 
-[Unreleased]: https://github.com/kohirens/go-get-latest/compare/0.1.5...HEAD
+[Unreleased]: https://github.com/kohirens/go-get-latest/compare/0.1.6...HEAD
+[0.1.6]: https://github.com/kohirens/go-get-latest/compare/0.1.5...0.1.6
 [0.1.5]: https://github.com/kohirens/go-get-latest/compare/0.1.4...0.1.5
 [0.1.4]: https://github.com/kohirens/go-get-latest/compare/0.1.3...0.1.4
 [0.1.3]: https://github.com/kohirens/go-get-latest/compare/0.1.2...0.1.3
