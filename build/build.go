@@ -132,12 +132,15 @@ func Run(ca []string) error {
 	if err2 != nil {
 		return err2
 	}
+
 	var err3 error
 	for _, artifact := range artifacts {
-		if _, e := gh.UploadAsset(artifact, release); e != nil {
+		asset, e := gh.UploadAsset(artifact, release)
+		if e != nil {
 			err3 = e
 			break
 		}
+		log.Logf("asset %s state is %s", asset.Url, asset.State)
 	}
 
 	if err3 != nil {
