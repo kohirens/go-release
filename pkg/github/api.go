@@ -87,7 +87,7 @@ func (c *Client) UploadAsset(assetPath string, release *Release) (*Asset, error)
 	url := fmt.Sprintf(epReleaseAsset, c.Org, c.Repository, release.Id) + "?name=" + basename
 
 	if release.UploadUrl != "" {
-		url = release.UploadUrl + "?name=" + basename
+		log.Infof(stdout.UrlRequest, "POST", release.UploadUrl)
 	}
 
 	body, errBody := bodyFromFile(assetPath)
