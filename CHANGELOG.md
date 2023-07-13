@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="0.2.4"></a>
+## [0.2.4] - 2023-07-13
+### Fixed
+- GitHub API Uploads domain
+
+
 <a name="0.2.3"></a>
 ## [0.2.3] - 2023-07-13
 ### Changed
@@ -80,7 +86,8 @@ Swapped input argments.
 - To Make Build a Subcommand
 
 
-[Unreleased]: https://github.com/kohirens/go-get-latest/compare/0.2.3...HEAD
+[Unreleased]: https://github.com/kohirens/go-get-latest/compare/0.2.4...HEAD
+[0.2.4]: https://github.com/kohirens/go-get-latest/compare/0.2.3...0.2.4
 [0.2.3]: https://github.com/kohirens/go-get-latest/compare/0.2.2...0.2.3
 [0.2.2]: https://github.com/kohirens/go-get-latest/compare/0.2.1...0.2.2
 [0.2.1]: https://github.com/kohirens/go-get-latest/compare/0.2.0...0.2.1
