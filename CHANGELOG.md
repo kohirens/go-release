@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="0.2.0"></a>
+## [0.2.0] - 2023-07-13
+### Added
+- Set Log Level From Environment Variable
+
+
 <a name="0.1.6"></a>
 ## [0.1.6] - 2023-07-12
 ### Changed
@@ -56,7 +62,8 @@ Swapped input argments.
 - To Make Build a Subcommand
 
 
-[Unreleased]: https://github.com/kohirens/go-get-latest/compare/0.1.6...HEAD
+[Unreleased]: https://github.com/kohirens/go-get-latest/compare/0.2.0...HEAD
+[0.2.0]: https://github.com/kohirens/go-get-latest/compare/0.1.6...0.2.0
 [0.1.6]: https://github.com/kohirens/go-get-latest/compare/0.1.5...0.1.6
 [0.1.5]: https://github.com/kohirens/go-get-latest/compare/0.1.4...0.1.5
 [0.1.4]: https://github.com/kohirens/go-get-latest/compare/0.1.3...0.1.4
