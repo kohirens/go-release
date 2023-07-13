@@ -2,6 +2,7 @@ package github
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/kohirens/stdlib/log"
 	"io"
@@ -11,7 +12,8 @@ import (
 
 const (
 	BaseUri           = "https://api.github.com/repos/%s/%s"
-	epReleaseAsset    = BaseUri + "/releases/%s/assets"
+	epReleaseAsset    = BaseUri + "/releases/%d/assets"
+	epReleaseId       = BaseUri + "/releases/tags/%s"
 	HeaderApiAccept   = "application/vnd.github+json"
 	HeaderApiPostType = "application/octet-stream"
 )
@@ -42,30 +44,71 @@ func NewClient(h HttpClient, org, repository, token string) *Client {
 	}
 }
 
-// UploadAsset
-// see: https://docs.github.com/en/rest/releases/assets?apiVersion=2022-11-28#upload-a-release-asset
-func (c *Client) UploadAsset(assetPath string, version string) error {
-	if version == "" {
-		return fmt.Errorf(stderr.VersionArgEmpty)
-	}
+// UploadAsset The endpoint you call to upload release assets is specific to
+// your release. Use the upload_url
+//
+//	see: https://docs.github.com/en/rest/releases/assets?apiVersion=2022-11-28#upload-a-release-asset
+func (c *Client) UploadAsset(assetPath string, release *Release) (*Asset, error) {
 
-	url := fmt.Sprintf(epReleaseAsset, c.Org, c.Repository, version)
+	url := fmt.Sprintf(epReleaseAsset, c.Org, c.Repository, release.Id)
 
 	body, errBody := bodyFromFile(assetPath)
 	if errBody != nil {
-		return errBody
+		return nil, errBody
 	}
 
 	res, err2 := c.send("POST", url, body)
 	if err2 != nil {
-		return fmt.Errorf(stderr.CouldNotRequest, url, err2.Error())
+		return nil, fmt.Errorf(stderr.CouldNotRequest, url, err2.Error())
 	}
 
 	if res.StatusCode != 201 {
-		return fmt.Errorf(stderr.ReturnStatusCode, res.StatusCode)
+		return nil, fmt.Errorf(stderr.ReturnStatusCode, res.StatusCode)
 	}
 
-	return nil
+	bodyBits, err2 := io.ReadAll(res.Body)
+	if err2 != nil {
+		return nil, fmt.Errorf(stderr.CouldNotReadResponseBody, err2.Error())
+	}
+
+	ast := &Asset{}
+	if e := json.Unmarshal(bodyBits, ast); e != nil {
+		return nil, fmt.Errorf(stderr.CouldNotDecodeJson, e.Error())
+	}
+
+	return ast, nil
+}
+
+// GetReleaseIdByTag Get a published release with the specified tag.
+// see: https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#get-a-release-by-tag-name
+// sample: https://api.github.com/repos/OWNER/REPO/releases/tags/TAG
+func (c *Client) GetReleaseIdByTag(version string) (*Release, error) {
+	if version == "" {
+		return nil, fmt.Errorf(stderr.VersionArgEmpty)
+	}
+
+	url := fmt.Sprintf(epReleaseId, c.Org, c.Repository, version)
+
+	res, err1 := c.send("GET", url, nil)
+	if err1 != nil {
+		return nil, fmt.Errorf(stderr.CouldNotRequest, url, err1.Error())
+	}
+
+	if res.StatusCode != 200 {
+		return nil, fmt.Errorf(stderr.ReturnStatusCode, res.StatusCode)
+	}
+
+	bodyBits, err2 := io.ReadAll(res.Body)
+	if err2 != nil {
+		return nil, fmt.Errorf(stderr.CouldNotReadResponseBody, err2.Error())
+	}
+
+	rel := &Release{}
+	if e := json.Unmarshal(bodyBits, rel); e != nil {
+		return nil, fmt.Errorf(stderr.CouldNotDecodeJson, e.Error())
+	}
+
+	return rel, nil
 }
 
 func bodyFromFile(filepath string) (*bytes.Reader, error) {
