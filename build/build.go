@@ -128,16 +128,20 @@ func Run(ca []string) error {
 
 	gh := github.NewClient(&http.Client{Timeout: time.Second * 5}, org, repo, token)
 
-	var err2 error
+	release, err2 := gh.GetReleaseIdByTag(version)
+	if err2 != nil {
+		return err2
+	}
+	var err3 error
 	for _, artifact := range artifacts {
-		if e := gh.UploadAsset(artifact, version); e != nil {
-			err2 = e
+		if _, e := gh.UploadAsset(artifact, release); e != nil {
+			err3 = e
 			break
 		}
 	}
 
-	if err2 != nil {
-		return err2
+	if err3 != nil {
+		return err3
 	}
 
 	return nil
