@@ -13,8 +13,8 @@ import (
 
 const (
 	BaseUri           = "https://api.github.com/repos/%s/%s"
-	epReleaseAsset    = BaseUri + "/releases/%d/assets"
-	epReleaseId       = "https://uploads.github.com/repos/%s/%s/releases/tags/%s"
+	epUploadAsset     = "https://uploads.github.com/repos/%s/%s/releases/%d/assets"
+	epReleaseId       = BaseUri + "/releases/tags/%s"
 	HeaderApiAccept   = "application/vnd.github+json"
 	HeaderApiPostType = "application/octet-stream"
 )
@@ -84,7 +84,7 @@ func NewClient(h HttpClient, org, repository, token string) *Client {
 func (c *Client) UploadAsset(assetPath string, release *Release) (*Asset, error) {
 
 	basename := filepath.Base(assetPath)
-	url := fmt.Sprintf(epReleaseAsset, c.Org, c.Repository, release.Id) + "?name=" + basename
+	url := fmt.Sprintf(epUploadAsset, c.Org, c.Repository, release.Id) + "?name=" + basename
 
 	if release.UploadUrl != "" {
 		log.Infof(stdout.UrlRequest, "POST", release.UploadUrl)
