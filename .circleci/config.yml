@@ -106,7 +106,7 @@ jobs:
                 name: Build and publish executables
                 command: |
                     echo "Publishing GitHub release '<< parameters.build_tag >>' assets"
-                    src_dir=./
+                    src_dir=.
                     go generate "${src_dir}"
                     ./go-release build \
                         "${src_dir}" \
