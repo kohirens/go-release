@@ -9,6 +9,7 @@ import (
 	"github.com/kohirens/stdlib/cli"
 	"github.com/kohirens/stdlib/log"
 	"os"
+	"strconv"
 )
 
 const (
@@ -67,6 +68,12 @@ func main() {
 
 	if af.version {
 		fmt.Printf(stdout.Version, bi.CurrentVersion, bi.CommitHash)
+	}
+
+	if vl, ok := os.LookupEnv("VERBOSITY_LEVEL"); ok {
+		if val, err1x := strconv.ParseInt(vl, 10, 64); err1x == nil {
+			log.VerbosityLevel = int(val)
+		}
 	}
 
 	ca := os.Args[1:]
