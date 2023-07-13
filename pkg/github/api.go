@@ -14,7 +14,7 @@ import (
 const (
 	BaseUri           = "https://api.github.com/repos/%s/%s"
 	epReleaseAsset    = BaseUri + "/releases/%d/assets"
-	epReleaseId       = BaseUri + "/releases/tags/%s"
+	epReleaseId       = "https://uploads.github.com/repos/%s/%s/releases/tags/%s"
 	HeaderApiAccept   = "application/vnd.github+json"
 	HeaderApiPostType = "application/octet-stream"
 )
