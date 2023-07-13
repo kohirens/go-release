@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 )
 
 const (
@@ -33,51 +34,6 @@ type Client struct {
 var (
 	HeaderApiVersion = "2022-11-28"
 )
-
-// NewClient Return a GitHub API client.
-func NewClient(h HttpClient, org, repository, token string) *Client {
-	return &Client{
-		Http:       h,
-		Org:        org,
-		Repository: repository,
-		Token:      token,
-	}
-}
-
-// UploadAsset The endpoint you call to upload release assets is specific to
-// your release. Use the upload_url
-//
-//	see: https://docs.github.com/en/rest/releases/assets?apiVersion=2022-11-28#upload-a-release-asset
-func (c *Client) UploadAsset(assetPath string, release *Release) (*Asset, error) {
-
-	url := fmt.Sprintf(epReleaseAsset, c.Org, c.Repository, release.Id)
-
-	body, errBody := bodyFromFile(assetPath)
-	if errBody != nil {
-		return nil, errBody
-	}
-
-	res, err2 := c.send("POST", url, body)
-	if err2 != nil {
-		return nil, fmt.Errorf(stderr.CouldNotRequest, url, err2.Error())
-	}
-
-	if res.StatusCode != 201 {
-		return nil, fmt.Errorf(stderr.ReturnStatusCode, res.StatusCode)
-	}
-
-	bodyBits, err2 := io.ReadAll(res.Body)
-	if err2 != nil {
-		return nil, fmt.Errorf(stderr.CouldNotReadResponseBody, err2.Error())
-	}
-
-	ast := &Asset{}
-	if e := json.Unmarshal(bodyBits, ast); e != nil {
-		return nil, fmt.Errorf(stderr.CouldNotDecodeJson, e.Error())
-	}
-
-	return ast, nil
-}
 
 // GetReleaseIdByTag Get a published release with the specified tag.
 // see: https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#get-a-release-by-tag-name
@@ -109,6 +65,56 @@ func (c *Client) GetReleaseIdByTag(version string) (*Release, error) {
 	}
 
 	return rel, nil
+}
+
+// NewClient Return a GitHub API client.
+func NewClient(h HttpClient, org, repository, token string) *Client {
+	return &Client{
+		Http:       h,
+		Org:        org,
+		Repository: repository,
+		Token:      token,
+	}
+}
+
+// UploadAsset The endpoint you call to upload release assets is specific to
+// your release. Use the upload_url
+//
+//	see: https://docs.github.com/en/rest/releases/assets?apiVersion=2022-11-28#upload-a-release-asset
+func (c *Client) UploadAsset(assetPath string, release *Release) (*Asset, error) {
+
+	basename := filepath.Base(assetPath)
+	url := fmt.Sprintf(epReleaseAsset, c.Org, c.Repository, release.Id) + "?name=" + basename
+
+	if release.UploadUrl != "" {
+		url = release.UploadUrl + "?name=" + basename
+	}
+
+	body, errBody := bodyFromFile(assetPath)
+	if errBody != nil {
+		return nil, errBody
+	}
+
+	res, err2 := c.send("POST", url, body)
+	if err2 != nil {
+		return nil, fmt.Errorf(stderr.CouldNotRequest, url, err2.Error())
+	}
+
+	if res.StatusCode != 201 {
+		return nil, fmt.Errorf(stderr.ReturnStatusCode, res.StatusCode)
+	}
+
+	bodyBits, err2 := io.ReadAll(res.Body)
+	if err2 != nil {
+		return nil, fmt.Errorf(stderr.CouldNotReadResponseBody, err2.Error())
+	}
+
+	ast := &Asset{}
+	if e := json.Unmarshal(bodyBits, ast); e != nil {
+		return nil, fmt.Errorf(stderr.CouldNotDecodeJson, e.Error())
+	}
+
+	return ast, nil
 }
 
 func bodyFromFile(filepath string) (*bytes.Reader, error) {
