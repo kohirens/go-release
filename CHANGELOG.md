@@ -2,6 +2,12 @@
 ## [Unreleased]
 
 
+<a name="0.2.5"></a>
+## [0.2.5] - 2023-07-13
+### Fixed
+- Upload Asset To GitHub Release
+
+
 <a name="0.2.4"></a>
 ## [0.2.4] - 2023-07-13
 ### Fixed
@@ -86,7 +92,8 @@ Swapped input argments.
 - To Make Build a Subcommand
 
 
-[Unreleased]: https://github.com/kohirens/go-get-latest/compare/0.2.4...HEAD
+[Unreleased]: https://github.com/kohirens/go-get-latest/compare/0.2.5...HEAD
+[0.2.5]: https://github.com/kohirens/go-get-latest/compare/0.2.4...0.2.5
 [0.2.4]: https://github.com/kohirens/go-get-latest/compare/0.2.3...0.2.4
 [0.2.3]: https://github.com/kohirens/go-get-latest/compare/0.2.2...0.2.3
 [0.2.2]: https://github.com/kohirens/go-get-latest/compare/0.2.1...0.2.2
