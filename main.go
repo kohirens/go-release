@@ -63,11 +63,13 @@ func main() {
 
 	if af.help {
 		mainErr = cli.Usage(appName, um, af.subcommand)
-		fmt.Print("\n\n")
+		fmt.Println()
+		return
 	}
 
 	if af.version {
-		fmt.Printf(stdout.Version, bi.CurrentVersion, bi.CommitHash)
+		log.Logf(stdout.Version, bi.CurrentVersion, bi.CommitHash)
+		return
 	}
 
 	if vl, ok := os.LookupEnv("VERBOSITY_LEVEL"); ok {
