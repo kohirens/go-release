@@ -215,6 +215,7 @@ workflows:
                   context: << pipeline.parameters.ctx_docker >>
             - run-test:
                   context: << pipeline.parameters.ctx_docker >>
+                  requires: [ co ]
             - vro/tag-and-release:
                   context: << pipeline.parameters.ctx_auto_release >>
                   requires: [ run-test ]
