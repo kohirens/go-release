@@ -62,7 +62,7 @@ jobs:
         docker:
             - image: cimg/go:1.20
         steps:
-            - checkout
+            - attach_workspace: { at: "." }
             - restore_cache:
                 keys:
                     - go-mod-v1-{{ checksum "go.mod" }}
@@ -78,10 +78,27 @@ jobs:
                   name: Run tests
                   command: |
                       go test ./...
-
             - persist_to_workspace:
                 root: .
                 paths: [ ./* ]
+
+    run-img-test:
+        executor: image-builder
+        steps:
+            - attach_workspace: { at: "." }
+            - setup_remote_docker:
+                  docker_layer_caching: true
+            - run:
+                  name: Build image and run test
+                  command: |
+                      docker build --rm \
+                          -f .docker/go-release/Dockerfile \
+                          -t go-release:alpha \
+                          --progress plain \
+                          --target "release" .
+                      docker run --rm --entrypoint go go-release:alpha version
+                      docker run --rm go-release:alpha -version
+                      docker rmi go-release:alpha
 
     publish-execs:
         parameters:
@@ -159,10 +176,14 @@ jobs:
 workflows:
     quality-control:
         jobs:
+            - co:
+                  filters: { branches: { ignore: [main, auto-update-changelog] } }
             - run-test:
-                context: << pipeline.parameters.ctx_docker >>
-                name: "run test"
-                filters: { branches: { ignore: [main, auto-update-changelog] } }
+                  context: << pipeline.parameters.ctx_docker >>
+                  requires: [ co ]
+            - run-img-test:
+                  context: << pipeline.parameters.ctx_docker >>
+                  requires: [ co ]
 
     workflow-selector:
         when:

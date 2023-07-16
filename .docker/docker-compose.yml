@@ -8,7 +8,7 @@ services:
                 REPO: '${REPO}'
             dockerfile: '.docker/go-release/Dockerfile'
             context: '..'
-            target: 'build'
+            target: 'dev'
         image: 'kohirens/go-release:build'
         networks:
             default:
