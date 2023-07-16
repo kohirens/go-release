@@ -37,21 +37,26 @@ RUN addgroup --system --gid ${USER_GID} ${USER_GROUP} \
 USER ${USER_NAME}
 
 # Make directories with current user permissions
-RUN mkdir -p ~/bin ~/src
+RUN mkdir -p ~/bin ~/src/${REPO}
 
 ENV PATH="${PATH}:/home/${USER_NAME}/bin"
 
 WORKDIR "/home/${USER_NAME}/src/${REPO}"
 
+RUN ls -vla /home/${USER_NAME}/src/${REPO}
+
 # Add source files
 COPY --chown=${USER_NAME}:${USER_GROUP} ./ ./
 COPY --from=kohirens/git-tool-belt:2.1.2 /usr/local/bin/git-tool-belt /usr/local/bin/
+
 # Build
-RUN git config --global --add safe.directory "/home/${USER_NAME}/src/${REPO}" \
+RUN pwd && ls -la . && git config --global --add safe.directory "/home/${USER_NAME}/src/${REPO}" \
  && go mod tidy \
  && go generate \
  && go build \
  && go install
+
+FROM build AS dev
 
 COPY .docker/go-release/start.sh /usr/local/bin/start.sh
 
@@ -62,15 +67,9 @@ HEALTHCHECK --interval=5s --timeout=3s --start-period=3s --retries=4 \
 
 CMD [ ]
 
-FROM kohirens/git-tool-belt:2.1.2 AS release
+FROM build AS release
 
 ARG USER_NAME
-ARG USER_GROUP
-ARG REPO
-ARG APP_NAME
-
-# Add build artifacts
-COPY --from=build --chown=${USER_NAME}:${USER_GROUP} "/home/${USER_NAME}/bin/${APP_NAME}" /bin/vro
 
 ENV PATH="${PATH}:/home/${USER_NAME}/bin"
 
