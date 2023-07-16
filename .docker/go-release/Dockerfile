@@ -46,11 +46,11 @@ WORKDIR "/home/${USER_NAME}/src/${REPO}"
 RUN ls -vla /home/${USER_NAME}/src/${REPO}
 
 # Add source files
-COPY --chown=${USER_NAME}:${USER_GROUP} ./ ./
+COPY --chown=${USER_NAME}:${USER_GROUP} . .
 COPY --from=kohirens/git-tool-belt:2.1.2 /usr/local/bin/git-tool-belt /usr/local/bin/
 
 # Build
-RUN pwd && ls -la . && git config --global --add safe.directory "/home/${USER_NAME}/src/${REPO}" \
+RUN git config --global --add safe.directory "/home/${USER_NAME}/src/${REPO}" \
  && go mod tidy \
  && go generate \
  && go build \
