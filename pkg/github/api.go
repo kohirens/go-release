@@ -15,6 +15,7 @@ const (
 	BaseUri           = "https://api.github.com/repos/%s/%s"
 	epUploadAsset     = "https://uploads.github.com/repos/%s/%s/releases/%d/assets"
 	epReleaseId       = BaseUri + "/releases/tags/%s"
+	epReleaseLatest   = BaseUri + "/releases/latest"
 	HeaderApiAccept   = "application/vnd.github+json"
 	HeaderApiPostType = "application/octet-stream"
 )
@@ -34,6 +35,35 @@ type Client struct {
 var (
 	HeaderApiVersion = "2022-11-28"
 )
+
+// GetReleaseLatest Get a published release with the specified tag.
+//
+//	see: https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#get-the-latest-release
+//	sample: https://api.github.com/repos/OWNER/REPO/releases/latest
+func (c *Client) GetReleaseLatest() (*Release, error) {
+	url := fmt.Sprintf(epReleaseLatest, c.Org, c.Repository)
+
+	res, err1 := c.send("GET", url, nil)
+	if err1 != nil {
+		return nil, fmt.Errorf(stderr.CouldNotRequest, url, err1.Error())
+	}
+
+	if res.StatusCode != 200 {
+		return nil, fmt.Errorf(stderr.ReturnStatusCode, res.StatusCode)
+	}
+
+	bodyBits, err2 := io.ReadAll(res.Body)
+	if err2 != nil {
+		return nil, fmt.Errorf(stderr.CouldNotReadResponseBody, err2.Error())
+	}
+
+	rel := &Release{}
+	if e := json.Unmarshal(bodyBits, rel); e != nil {
+		return nil, fmt.Errorf(stderr.CouldNotDecodeJson, e.Error())
+	}
+
+	return rel, nil
+}
 
 // GetReleaseIdByTag Get a published release with the specified tag.
 // see: https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#get-a-release-by-tag-name
