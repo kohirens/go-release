@@ -50,7 +50,7 @@ parameters:
         description: Docker image repository
         type: string
     ssh_finger:
-        default: "08:ea:92:c4:12:9f:bc:88:2a:69:2b:83:58:13:bc:00"
+        default: "SHA256:aKLk+IhiY6p1yhzVueC/7Pjyu9sU3SM2VVPHHb3GMJU"
         description: SSH fingerprint.
         type: string
     triggered_flow:
