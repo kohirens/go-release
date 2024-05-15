@@ -222,14 +222,12 @@ workflows:
         jobs:
             - co:
                   context: << pipeline.parameters.ctx_docker >>
-            - run-test:
-                  context: << pipeline.parameters.ctx_docker >>
-                  requires: [ co ]
             - vro/tag-and-release:
                   context: << pipeline.parameters.ctx_auto_release >>
-                  requires: [ run-test ]
+                  requires: [ co ]
                   do_attach_workspace: true
                   do_checkout: false
+                  tag_env_var: "GO_VER"
 
     on-tag-release:
         jobs:
@@ -237,18 +235,21 @@ workflows:
                 context: << pipeline.parameters.ctx_docker >>
                 filters:
                     <<: *filter-semantic-tag
+            - run-test:
+                  context: << pipeline.parameters.ctx_docker >>
+                  requires: [ co ]
             - publish-execs:
                 context: << pipeline.parameters.ctx_auto_release >>
                 filters:
                     <<: *filter-semantic-tag
                 app_name: << pipeline.parameters.app_name >>
-                requires: [ co ]
+                requires: [ run-test ]
             - publish-image:
                 name: publish-release-image
                 context: << pipeline.parameters.ctx_docker >>
                 filters:
                     <<: *filter-semantic-tag
-                requires: [ co ]
+                requires: [ run-test ]
                 docker_file: ".docker/go-release/Dockerfile"
 
 
