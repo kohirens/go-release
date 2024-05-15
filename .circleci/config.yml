@@ -49,6 +49,9 @@ parameters:
         default: kohirens/go-release
         description: Docker image repository
         type: string
+    go_ver_file:
+        default: variables.env
+        type: string
     ssh_finger:
         default: "SHA256:aKLk+IhiY6p1yhzVueC/7Pjyu9sU3SM2VVPHHb3GMJU"
         description: SSH fingerprint.
@@ -80,6 +83,7 @@ jobs:
                       echo "GO_VER_NO_PATCH=${GO_VER_NO_PATCH}" >> << pipeline.parameters.variables_file >>
                       echo "DH_IMG=<<pipeline.parameters.dh_img_repo>>:${GO_VER_NO_PATCH}" >> <<pipeline.parameters.variables_file>>
                       cat <<pipeline.parameters.variables_file>>
+                      echo "${GO_VER}" >> <<pipeline.parameters.go_ver_file>>
             - persist_to_workspace:
                 root: .
                 paths: [ . ]
@@ -227,7 +231,7 @@ workflows:
                   requires: [ co ]
                   do_attach_workspace: true
                   do_checkout: false
-                  tag_env_var: "GO_VER"
+                  tag_file: <<pipeline.parameters.go_ver_file>>
 
     on-tag-release:
         jobs:
