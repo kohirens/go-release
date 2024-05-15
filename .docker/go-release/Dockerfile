@@ -5,7 +5,7 @@ ARG USER_GROUP='app_users'
 ARG REPO='github.com/kohirens/go-release'
 ARG APP_NAME='go-release'
 
-FROM golang:1.20-alpine3.18 AS build
+FROM golang:1.22-alpine3.19 AS build
 
 ARG USER_NAME
 ARG USER_UID
