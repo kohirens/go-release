@@ -61,7 +61,7 @@ parameters:
         description: Indicates with workflow should run.
         type: string
     variables_file:
-        default: variables.env
+        default: go_ver.txt
         type: string
 
 jobs:
