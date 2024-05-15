@@ -1,13 +1,13 @@
 version: 2.1
 
-orbs:
-    vro: kohirens/version-release@dev:alpha
-
 filter-semantic-tag: &filter-semantic-tag
     tags:
         only: /^v?\d+\.\d+\.\d+$/
     branches:
         ignore: /.*/
+
+orbs:
+    vro: kohirens/version-release@4.0.2
 
 executors:
     image-builder:
@@ -41,9 +41,6 @@ parameters:
     triggered_flow:
         default: "workflow-selector"
         description: Indicates with workflow should run.
-        type: string
-    exec_img_tag:
-        default: "latest"
         type: string
 
 jobs:
@@ -194,7 +191,6 @@ workflows:
             - vro/workflow-selector:
                 context: << pipeline.parameters.ctx_auto_release >>
                 ssh_finger: << pipeline.parameters.ssh_finger >>
-                exec_img_tag: << pipeline.parameters.exec_img_tag >>
 
     publish-changelog:
         when:
@@ -204,7 +200,6 @@ workflows:
             - vro/publish-changelog:
                 context: << pipeline.parameters.ctx_auto_release >>
                 ssh_finger: << pipeline.parameters.ssh_finger >>
-                exec_img_tag: << pipeline.parameters.exec_img_tag >>
 
     publish-release-tag:
         when:
@@ -221,7 +216,6 @@ workflows:
                   requires: [ run-test ]
                   do_attach_workspace: true
                   do_checkout: false
-                  exec_img_tag: << pipeline.parameters.exec_img_tag >>
 
     on-tag-release:
         jobs:
