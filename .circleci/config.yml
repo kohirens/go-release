@@ -6,6 +6,11 @@ filter-semantic-tag: &filter-semantic-tag
     branches:
         ignore: /.*/
 
+remote_worker: &remote_worker
+    setup_remote_docker:
+        version: edge
+        docker_layer_caching: true
+
 orbs:
     vro: kohirens/version-release@4.0.2
 
@@ -13,6 +18,16 @@ executors:
     image-builder:
         docker: # see https://circleci.com/docs/building-docker-images/#docker-version
             - image: cimg/base:current
+              auth:
+                  username: ${DH_USER}
+                  password: ${DH_PASS}
+        resource_class: small
+        environment:
+            DOCKER_BUILDKIT: 1
+
+    go-get-latest:
+        docker: # see https://github.com/kohirens/go-get-latest
+            - image: kohirens/go-get-latest:0.6.0
               auth:
                   username: ${DH_USER}
                   password: ${DH_PASS}
@@ -30,7 +45,7 @@ parameters:
         default: kohirens-automation-dockerhub
         description: CircleCI context containing Docker Hub secrets.
         type: string
-    image_repo:
+    dh_img_repo:
         default: kohirens/go-release
         description: Docker image repository
         type: string
@@ -42,22 +57,36 @@ parameters:
         default: "workflow-selector"
         description: Indicates with workflow should run.
         type: string
+    variables_file:
+        default: variables.env
+        type: string
 
 jobs:
     co:
-        executor: image-builder
+        executor: go-get-latest
         steps:
             - add_ssh_keys:
                 fingerprints:
                     - << pipeline.parameters.ssh_finger >>
             - checkout
+            - run:
+                  name: "Get Alpine & Go latest versions"
+                  command: |
+                      ALPINE_VER=$(go-get-latest alpine2)
+                      GO_VER=$(go-get-latest go)
+                      GO_VER_NO_PATCH=$(go-get-latest --no-patch go)
+                      echo "ALPINE_VER=${ALPINE_VER}" > << pipeline.parameters.variables_file >>
+                      echo "GO_VER=${GO_VER}" >> << pipeline.parameters.variables_file >>
+                      echo "GO_VER_NO_PATCH=${GO_VER_NO_PATCH}" >> << pipeline.parameters.variables_file >>
+                      echo "DH_IMG=<<pipeline.parameters.dh_img_repo>>:${GO_VER_NO_PATCH}" >> <<pipeline.parameters.variables_file>>
+                      cat <<pipeline.parameters.variables_file>>
             - persist_to_workspace:
                 root: .
                 paths: [ . ]
 
     run-test:
         docker:
-            - image: cimg/go:1.20
+            - image: cimg/go:1.22
         steps:
             - attach_workspace: { at: "." }
             - restore_cache:
@@ -83,15 +112,13 @@ jobs:
         executor: image-builder
         steps:
             - attach_workspace: { at: "." }
-            - setup_remote_docker:
-                  docker_layer_caching: true
+            - *remote_worker
             - run:
                   name: Build image and run test
                   command: |
                       docker build --rm \
                           -f .docker/go-release/Dockerfile \
                           -t go-release:alpha \
-                          --progress plain \
                           --target "release" .
                       docker run --rm --entrypoint go go-release:alpha version
                       docker run --rm go-release:alpha -version
@@ -131,44 +158,31 @@ jobs:
                         "${GH_TOKEN}"
 
     publish-image:
+        executor: image-builder
         parameters:
-            ver_tag:
-                default: "latest"
-                type: string
-            image_repo:
-                type: string
             docker_file:
                 type: string
-        environment:
-            DOCKER_BUILDKIT: 1
-        executor: image-builder
         steps:
             - attach_workspace: { at: "." }
-            - setup_remote_docker:
-                  docker_layer_caching: true
+            - *remote_worker
             - run:
                 name: Build and push image
                 command: |
-                    export BUILD_VER="<<parameters.ver_tag>>"
-                    if [ -z "${BUILD_VER}" ]; then
-                        echo "ver_tag parameters is not set, or is empty"
-                        exit 1
-                    fi
-                    export DH_IMAGE="<<parameters.image_repo>>"
+                    export $(< <<pipeline.parameters.variables_file>>)
                     echo "${DH_PASS}" | docker login -u "${DH_USER}" --password-stdin
                     echo ""
-                    echo "Building ${DH_IMAGE} Version \"${BUILD_VER}\""
+                    echo "Building ${DH_IMG}"
                     docker build --rm \
                         -f "<< parameters.docker_file >>" \
-                        -t "${DH_IMAGE}:${BUILD_VER}" \
-                        --progress plain \
+                        -t "${DH_IMG}" \
+                        --build-arg ALPINE_VER --build-arg GO_VER \
                         --target "release" .
                     echo ""
-                    echo "Pushing ${DH_IMAGE} Version \"${BUILD_VER}\""
-                    docker push "${DH_IMAGE}:${BUILD_VER}"
+                    echo "Pushing ${DH_IMG}"
+                    docker push "${DH_IMG}"
                     echo ""
-                    echo "Cleaning up ${DH_IMAGE} Version \"${BUILD_VER}\""
-                    docker rmi "${DH_IMAGE}:${BUILD_VER}"
+                    echo "Cleaning up ${DH_IMG}"
+                    docker rmi "${DH_IMG}"
 
 workflows:
     quality-control:
@@ -235,6 +249,4 @@ workflows:
                 filters:
                     <<: *filter-semantic-tag
                 requires: [ co ]
-                ver_tag: << pipeline.git.tag >>
                 docker_file: ".docker/go-release/Dockerfile"
-                image_repo: << pipeline.parameters.image_repo >>

@@ -4,8 +4,10 @@ ARG USER_GID='1000'
 ARG USER_GROUP='app_users'
 ARG REPO='github.com/kohirens/go-release'
 ARG APP_NAME='go-release'
+ARG ALPINE_VER='3.19'
+ARG GO_VER='1.22'
 
-FROM golang:1.22-alpine3.19 AS build
+FROM golang:${GO_VER}-alpine${ALPINE_VER} AS build
 
 ARG USER_NAME
 ARG USER_UID
