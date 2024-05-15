@@ -250,3 +250,23 @@ workflows:
                     <<: *filter-semantic-tag
                 requires: [ co ]
                 docker_file: ".docker/go-release/Dockerfile"
+
+
+    scheduled-weekly-check:
+        when:
+            and:
+                - equal: ["scheduled-weekly-check", << pipeline.parameters.triggered_flow >>]
+                - equal: [ main, << pipeline.git.branch >> ]
+        jobs:
+            - co:
+                  context:
+                      - << pipeline.parameters.ctx_auto_release >>
+                      - << pipeline.parameters.ctx_docker >>
+            - publish-image:
+                  context:
+                      - << pipeline.parameters.ctx_auto_release >>
+                      - << pipeline.parameters.ctx_docker >>
+                  filters:
+                      <<: *filter-semantic-tag
+                  requires: [ co  ]
+                  docker_file: ".docker/go-release/Dockerfile"
